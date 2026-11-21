@@ -1,0 +1,362 @@
+{
+  "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
+  "id": "nl.senseshare",
+  "version": "1.0.0",
+  "compatibility": ">=12.2.0",
+  "sdk": 3,
+  "platforms": [
+    "local"
+  ],
+  "name": {
+    "en": "SenseShare",
+    "nl": "SenseShare"
+  },
+  "description": {
+    "en": "Put your neighbourhood on the map with the sensors you already have",
+    "nl": "Zet je buurt op de kaart met de sensoren die je al hebt"
+  },
+  "category": "tools",
+  "tags": {
+    "en": [
+      "opensensemap",
+      "sensebox",
+      "open data",
+      "citizen science",
+      "air quality",
+      "weather",
+      "temperature",
+      "upload"
+    ],
+    "nl": [
+      "opensensemap",
+      "sensebox",
+      "open data",
+      "burgerwetenschap",
+      "luchtkwaliteit",
+      "weer",
+      "temperatuur",
+      "upload"
+    ]
+  },
+  "permissions": [
+    "homey:manager:api"
+  ],
+  "images": {
+    "small": "/assets/images/small.png",
+    "large": "/assets/images/large.png",
+    "xlarge": "/assets/images/xlarge.png"
+  },
+  "author": {
+    "name": "Jan-Kees de Rijke"
+  },
+  "brandColor": "#2F7D5B",
+  "flow": {
+    "triggers": [
+      {
+        "id": "upload_failed",
+        "title": {
+          "en": "Upload failed",
+          "nl": "Upload mislukt"
+        },
+        "hint": {
+          "en": "Fires when an upload to openSenseMap failed, after any retries.",
+          "nl": "Gaat af als een upload naar openSenseMap is mislukt, na eventuele nieuwe pogingen."
+        },
+        "tokens": [
+          {
+            "name": "error",
+            "type": "string",
+            "title": {
+              "en": "Error message",
+              "nl": "Foutmelding"
+            },
+            "example": {
+              "en": "openSenseMap is not reachable.",
+              "nl": "openSenseMap is niet bereikbaar."
+            }
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=sensebox"
+          }
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "upload_now",
+        "title": {
+          "en": "Upload to openSenseMap now",
+          "nl": "Upload nu naar openSenseMap"
+        },
+        "hint": {
+          "en": "Sends the current readings of all linked sensors right away.",
+          "nl": "Verstuurt de actuele metingen van alle gekoppelde sensoren meteen."
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=sensebox"
+          }
+        ]
+      },
+      {
+        "id": "send_value",
+        "title": {
+          "en": "Send value to sensor",
+          "nl": "Stuur waarde naar sensor"
+        },
+        "titleFormatted": {
+          "en": "Send value [[value]] to sensor [[sensor]]",
+          "nl": "Stuur waarde [[value]] naar sensor [[sensor]]"
+        },
+        "hint": {
+          "en": "Sends any number, for example a Logic variable, as a measurement of the chosen sensor, timestamped now.",
+          "nl": "Verstuurt een willekeurig getal, bijvoorbeeld een Logica-variabele, als meting van de gekozen sensor, met het huidige tijdstip."
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=sensebox"
+          },
+          {
+            "name": "value",
+            "type": "number",
+            "title": {
+              "en": "Value",
+              "nl": "Waarde"
+            },
+            "placeholder": {
+              "en": "21.5",
+              "nl": "21,5"
+            }
+          },
+          {
+            "name": "sensor",
+            "type": "autocomplete",
+            "title": {
+              "en": "Sensor",
+              "nl": "Sensor"
+            },
+            "placeholder": {
+              "en": "Choose a sensor of the senseBox",
+              "nl": "Kies een sensor van de senseBox"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "drivers": [
+    {
+      "name": {
+        "en": "senseBox",
+        "nl": "senseBox"
+      },
+      "class": "sensor",
+      "capabilities": [
+        "last_upload",
+        "upload_failures"
+      ],
+      "platforms": [
+        "local"
+      ],
+      "connectivity": [
+        "cloud"
+      ],
+      "images": {
+        "small": "/drivers/sensebox/assets/images/small.png",
+        "large": "/drivers/sensebox/assets/images/large.png",
+        "xlarge": "/drivers/sensebox/assets/images/xlarge.png"
+      },
+      "pair": [
+        {
+          "id": "login_credentials",
+          "template": "login_credentials",
+          "options": {
+            "title": {
+              "en": "Sign in to openSenseMap",
+              "nl": "Inloggen bij openSenseMap"
+            },
+            "usernameLabel": {
+              "en": "E-mail address or user name",
+              "nl": "E-mailadres of gebruikersnaam"
+            },
+            "usernamePlaceholder": {
+              "en": "you@example.com",
+              "nl": "jij@voorbeeld.nl"
+            },
+            "passwordLabel": {
+              "en": "Password",
+              "nl": "Wachtwoord"
+            },
+            "passwordPlaceholder": {
+              "en": "Password",
+              "nl": "Wachtwoord"
+            }
+          },
+          "navigation": {
+            "next": "list_devices"
+          }
+        },
+        {
+          "id": "list_devices",
+          "template": "list_devices",
+          "navigation": {
+            "prev": "login_credentials",
+            "next": "koppelen"
+          }
+        },
+        {
+          "id": "koppelen",
+          "navigation": {
+            "prev": "list_devices"
+          }
+        }
+      ],
+      "repair": [
+        {
+          "id": "koppelen"
+        },
+        {
+          "id": "login_credentials",
+          "template": "login_credentials",
+          "options": {
+            "title": {
+              "en": "Sign in to openSenseMap again",
+              "nl": "Opnieuw inloggen bij openSenseMap"
+            },
+            "usernameLabel": {
+              "en": "E-mail address or user name",
+              "nl": "E-mailadres of gebruikersnaam"
+            },
+            "usernamePlaceholder": {
+              "en": "you@example.com",
+              "nl": "jij@voorbeeld.nl"
+            },
+            "passwordLabel": {
+              "en": "Password",
+              "nl": "Wachtwoord"
+            },
+            "passwordPlaceholder": {
+              "en": "Password",
+              "nl": "Wachtwoord"
+            }
+          },
+          "navigation": {
+            "next": "koppelen"
+          }
+        }
+      ],
+      "id": "sensebox",
+      "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "Upload",
+            "nl": "Uploaden"
+          },
+          "children": [
+            {
+              "id": "upload_enabled",
+              "type": "checkbox",
+              "value": true,
+              "label": {
+                "en": "Upload automatically",
+                "nl": "Automatisch uploaden"
+              },
+              "hint": {
+                "en": "When off, nothing is sent on the interval. The Flow cards \"Upload now\" and \"Send value\" keep working.",
+                "nl": "Als dit uit staat, wordt er niets per interval verstuurd. De Flow-kaarten \"Upload nu\" en \"Stuur waarde\" blijven werken."
+              }
+            },
+            {
+              "id": "upload_interval",
+              "type": "number",
+              "value": 5,
+              "min": 1,
+              "max": 1440,
+              "step": 1,
+              "units": {
+                "en": "min",
+                "nl": "min"
+              },
+              "label": {
+                "en": "Upload interval",
+                "nl": "Uploadinterval"
+              },
+              "hint": {
+                "en": "How often the current readings are sent. Minimum 1 minute. Only readings that changed since the previous upload are sent.",
+                "nl": "Hoe vaak de actuele metingen worden verstuurd. Minimaal 1 minuut. Alleen metingen die sinds de vorige upload zijn veranderd, worden verstuurd."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "openSenseMap",
+            "nl": "openSenseMap"
+          },
+          "children": [
+            {
+              "id": "box_id",
+              "type": "label",
+              "value": "",
+              "label": {
+                "en": "senseBox ID",
+                "nl": "senseBox-ID"
+              }
+            },
+            {
+              "id": "account",
+              "type": "label",
+              "value": "",
+              "label": {
+                "en": "Account",
+                "nl": "Account"
+              },
+              "hint": {
+                "en": "To sign in again, change the links or reload the sensor list, open this device and choose Repair.",
+                "nl": "Om opnieuw in te loggen, de koppelingen te wijzigen of de sensorlijst opnieuw op te halen: open dit apparaat en kies Repareren."
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "capabilities": {
+    "last_upload": {
+      "type": "string",
+      "title": {
+        "en": "Last upload",
+        "nl": "Laatste upload"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/capabilities/last_upload.svg",
+      "insights": false
+    },
+    "upload_failures": {
+      "type": "number",
+      "title": {
+        "en": "Failed uploads",
+        "nl": "Mislukte uploads"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "decimals": 0,
+      "min": 0,
+      "icon": "/assets/capabilities/upload_failures.svg",
+      "insights": true
+    }
+  }
+}

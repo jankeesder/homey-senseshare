@@ -1,0 +1,12 @@
+{
+  "type": "string",
+  "title": {
+    "en": "Last upload",
+    "nl": "Laatste upload"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "icon": "/assets/capabilities/last_upload.svg",
+  "insights": false
+}

@@ -1,0 +1,83 @@
+{
+  "triggers": [
+    {
+      "id": "upload_failed",
+      "title": {
+        "en": "Upload failed",
+        "nl": "Upload mislukt"
+      },
+      "hint": {
+        "en": "Fires when an upload to openSenseMap failed, after any retries.",
+        "nl": "Gaat af als een upload naar openSenseMap is mislukt, na eventuele nieuwe pogingen."
+      },
+      "tokens": [
+        {
+          "name": "error",
+          "type": "string",
+          "title": {
+            "en": "Error message",
+            "nl": "Foutmelding"
+          },
+          "example": {
+            "en": "openSenseMap is not reachable.",
+            "nl": "openSenseMap is niet bereikbaar."
+          }
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "id": "upload_now",
+      "title": {
+        "en": "Upload to openSenseMap now",
+        "nl": "Upload nu naar openSenseMap"
+      },
+      "hint": {
+        "en": "Sends the current readings of all linked sensors right away.",
+        "nl": "Verstuurt de actuele metingen van alle gekoppelde sensoren meteen."
+      }
+    },
+    {
+      "id": "send_value",
+      "title": {
+        "en": "Send value to sensor",
+        "nl": "Stuur waarde naar sensor"
+      },
+      "titleFormatted": {
+        "en": "Send value [[value]] to sensor [[sensor]]",
+        "nl": "Stuur waarde [[value]] naar sensor [[sensor]]"
+      },
+      "hint": {
+        "en": "Sends any number, for example a Logic variable, as a measurement of the chosen sensor, timestamped now.",
+        "nl": "Verstuurt een willekeurig getal, bijvoorbeeld een Logica-variabele, als meting van de gekozen sensor, met het huidige tijdstip."
+      },
+      "args": [
+        {
+          "name": "value",
+          "type": "number",
+          "title": {
+            "en": "Value",
+            "nl": "Waarde"
+          },
+          "placeholder": {
+            "en": "21.5",
+            "nl": "21,5"
+          }
+        },
+        {
+          "name": "sensor",
+          "type": "autocomplete",
+          "title": {
+            "en": "Sensor",
+            "nl": "Sensor"
+          },
+          "placeholder": {
+            "en": "Choose a sensor of the senseBox",
+            "nl": "Kies een sensor van de senseBox"
+          }
+        }
+      ]
+    }
+  ]
+}

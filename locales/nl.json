@@ -1,0 +1,52 @@
+{
+  "errors": {
+    "invalid_credentials": "E-mailadres of wachtwoord is onjuist.",
+    "network": "openSenseMap is niet bereikbaar. Controleer de internetverbinding van je Homey en probeer het opnieuw.",
+    "server": "openSenseMap geeft een serverfout (HTTP __status__). Probeer het later opnieuw.",
+    "rate_limited": "openSenseMap krijgt te veel verzoeken. Probeer het later opnieuw.",
+    "auth_required": "Het inloggen bij openSenseMap is verlopen. Open dit apparaat, kies Repareren en log opnieuw in.",
+    "access_token_invalid": "openSenseMap weigert de toegangssleutel van deze senseBox. Kies Repareren en log opnieuw in.",
+    "rejected": "openSenseMap heeft de metingen geweigerd: __message__",
+    "invalid_response": "openSenseMap gaf een onverwacht antwoord. Probeer het later opnieuw.",
+    "box_not_found": "Deze senseBox is niet gevonden in je openSenseMap-account.",
+    "box_not_in_account": "Deze senseBox hoort niet bij dit openSenseMap-account. Log in met het account waar de senseBox bij hoort.",
+    "no_boxes": "Dit account heeft nog geen senseBoxen. Maak er eerst een aan op opensensemap.org.",
+    "homey_api": "Kan de apparaten van je Homey niet lezen: __message__",
+    "no_sensor": "Kies een sensor.",
+    "sensor_not_found": "Deze sensor hoort niet (meer) bij de senseBox. Kies een andere sensor, of haal de sensorlijst opnieuw op via Repareren.",
+    "invalid_value": "De waarde is geen getal.",
+    "unknown": "Er ging iets mis: __message__"
+  },
+  "upload": {
+    "retrying": "__message__ Nieuwe poging over __seconds__ seconden."
+  },
+  "capability": {
+    "never": "Nog nooit"
+  },
+  "pair": {
+    "link": {
+      "title": "Sensoren koppelen",
+      "intro": "Kies per sensor van de senseBox welk Homey-apparaat de meting levert. Laat een sensor leeg om hem over te slaan.",
+      "outdoor_hint": "Koppel alleen buitensensoren: binnenmetingen geven een verkeerd beeld op de kaart.",
+      "account": "Account: __account__",
+      "loading": "Apparaten laden…",
+      "none": "— Niet koppelen —",
+      "no_zone": "Zonder zone",
+      "include": "Deze senseBox toevoegen",
+      "shared": "gedeeld",
+      "indoor_box": "Deze senseBox staat op openSenseMap ingesteld als \"binnen\".",
+      "no_sensors": "Deze senseBox heeft nog geen sensoren. Voeg ze toe op opensensemap.org en haal de sensorlijst opnieuw op.",
+      "no_options": "Er zijn geen Homey-apparaten met numerieke metingen gevonden.",
+      "unit_warning": "Eenheden verschillen: Homey meet in __homey__, openSenseMap verwacht __osem__.",
+      "unit_unknown": "Homey heeft geen eenheid voor deze meting; controleer of die overeenkomt met __osem__.",
+      "no_boxes_left": "Alle senseBoxen van dit account zijn al toegevoegd.",
+      "select_one": "Kies minstens één senseBox.",
+      "need_login": "Log opnieuw in bij openSenseMap om verder te gaan.",
+      "refresh": "Sensorlijst opnieuw ophalen",
+      "refreshed": "Sensorlijst bijgewerkt.",
+      "relogin": "Opnieuw inloggen",
+      "add": "Apparaten toevoegen",
+      "save": "Opslaan"
+    }
+  }
+}

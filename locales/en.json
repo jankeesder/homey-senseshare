@@ -1,0 +1,52 @@
+{
+  "errors": {
+    "invalid_credentials": "E-mail address or password is incorrect.",
+    "network": "openSenseMap is not reachable. Check your Homey's internet connection and try again.",
+    "server": "openSenseMap returned a server error (HTTP __status__). Please try again later.",
+    "rate_limited": "openSenseMap is receiving too many requests. Please try again later.",
+    "auth_required": "The openSenseMap sign-in has expired. Open this device, choose Repair and sign in again.",
+    "access_token_invalid": "openSenseMap rejects the access token of this senseBox. Choose Repair and sign in again.",
+    "rejected": "openSenseMap refused the measurements: __message__",
+    "invalid_response": "openSenseMap sent an unexpected response. Please try again later.",
+    "box_not_found": "This senseBox was not found in your openSenseMap account.",
+    "box_not_in_account": "This senseBox does not belong to this openSenseMap account. Sign in with the account that owns it.",
+    "no_boxes": "This account has no senseBoxes yet. Create one on opensensemap.org first.",
+    "homey_api": "Cannot read the devices of your Homey: __message__",
+    "no_sensor": "Choose a sensor.",
+    "sensor_not_found": "This sensor is not part of the senseBox (anymore). Choose another sensor, or reload the sensor list via Repair.",
+    "invalid_value": "The value is not a number.",
+    "unknown": "Something went wrong: __message__"
+  },
+  "upload": {
+    "retrying": "__message__ Trying again in __seconds__ seconds."
+  },
+  "capability": {
+    "never": "Never"
+  },
+  "pair": {
+    "link": {
+      "title": "Link sensors",
+      "intro": "For each sensor of the senseBox, choose the Homey device that provides the reading. Leave a sensor empty to skip it.",
+      "outdoor_hint": "Only link outdoor sensors: indoor readings give the wrong picture on the map.",
+      "account": "Account: __account__",
+      "loading": "Loading devices…",
+      "none": "— Do not link —",
+      "no_zone": "Without zone",
+      "include": "Add this senseBox",
+      "shared": "shared",
+      "indoor_box": "This senseBox is set to \"indoor\" on openSenseMap.",
+      "no_sensors": "This senseBox has no sensors yet. Add them on opensensemap.org and reload the sensor list.",
+      "no_options": "No Homey devices with numeric readings were found.",
+      "unit_warning": "Units differ: Homey measures in __homey__, openSenseMap expects __osem__.",
+      "unit_unknown": "Homey has no unit for this reading; check that it matches __osem__.",
+      "no_boxes_left": "All senseBoxes of this account have already been added.",
+      "select_one": "Choose at least one senseBox.",
+      "need_login": "Sign in to openSenseMap again to continue.",
+      "refresh": "Reload sensor list",
+      "refreshed": "Sensor list updated.",
+      "relogin": "Sign in again",
+      "add": "Add devices",
+      "save": "Save"
+    }
+  }
+}

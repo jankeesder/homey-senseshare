@@ -1,0 +1,271 @@
+<style>
+  .ss-note { font-size: 0.85em; opacity: 0.75; margin: 0.25em 0 0.75em; }
+  .ss-warning { font-size: 0.85em; color: #b45309; margin-top: 0.35em; }
+  .ss-alert { padding: 0.75em; border-radius: 0.5em; background: rgba(217, 119, 6, 0.12); color: #92400e; margin: 0.75em 0; }
+  .ss-box { margin-bottom: 1.5em; }
+  .ss-box-id { font-size: 0.8em; opacity: 0.6; word-break: break-all; margin-bottom: 0.5em; }
+  .ss-include { display: flex; align-items: center; gap: 0.5em; margin: 0.5em 0 0.75em; }
+  .ss-actions { display: flex; flex-direction: column; gap: 0.75em; margin-top: 1.5em; }
+  .ss-hidden { display: none !important; }
+</style>
+
+<header class="homey-header">
+  <h1 class="homey-title" id="ss-title"></h1>
+  <p class="homey-subtitle" id="ss-intro"></p>
+</header>
+
+<p class="ss-note" id="ss-outdoor"></p>
+<p class="ss-note" id="ss-account"></p>
+<div class="ss-alert ss-hidden" id="ss-alert"></div>
+
+<form class="homey-form" id="ss-form" onsubmit="return false;"></form>
+
+<div class="ss-actions">
+  <button type="button" class="homey-button-primary-full" id="ss-save"></button>
+  <button type="button" class="homey-button-secondary-full ss-hidden" id="ss-refresh"></button>
+  <button type="button" class="homey-button-transparent ss-hidden" id="ss-relogin"></button>
+</div>
+
+<script type="application/javascript">
+  (function () {
+    'use strict';
+
+    var state = { data: null, optionsByValue: {} };
+    var form = document.getElementById('ss-form');
+    var alertBox = document.getElementById('ss-alert');
+    var saveButton = document.getElementById('ss-save');
+    var refreshButton = document.getElementById('ss-refresh');
+    var reloginButton = document.getElementById('ss-relogin');
+
+    function t(key, tokens) {
+      return Homey.__('pair.link.' + key, tokens);
+    }
+
+    function errorText(err) {
+      return (err && err.message) || String(err);
+    }
+
+    // Builds DOM nodes; text is always set with textContent (no HTML injection).
+    function el(tag, attrs, children) {
+      var node = document.createElement(tag);
+      Object.keys(attrs || {}).forEach(function (name) {
+        if (name === 'text') node.textContent = attrs[name];
+        else node.setAttribute(name, attrs[name]);
+      });
+      (children || []).forEach(function (child) {
+        node.appendChild(typeof child === 'string' ? document.createTextNode(child) : child);
+      });
+      return node;
+    }
+
+    function show(node, visible) {
+      node.classList.toggle('ss-hidden', !visible);
+    }
+
+    function setAlert(text) {
+      alertBox.textContent = text || '';
+      show(alertBox, Boolean(text));
+    }
+
+    function groupOptions(options) {
+      var groups = [];
+      var byName = {};
+      options.forEach(function (option) {
+        var name = option.zoneName || '';
+        if (!byName[name]) {
+          byName[name] = { name: name, options: [] };
+          groups.push(byName[name]);
+        }
+        byName[name].options.push(option);
+      });
+      return groups;
+    }
+
+    function updateWarning(select, sensor, warning) {
+      var option = state.optionsByValue[select.value];
+      var text = '';
+      if (option && sensor.normalizedUnit) {
+        if (!option.normalizedUnits) text = t('unit_unknown', { osem: sensor.unit });
+        else if (option.normalizedUnits !== sensor.normalizedUnit) text = t('unit_warning', { homey: option.units, osem: sensor.unit });
+      }
+      warning.textContent = text;
+      show(warning, Boolean(text));
+    }
+
+    function renderSensor(box, sensor, groups) {
+      var id = 'ss-' + box.id + '-' + sensor.id;
+      var label = sensor.title + (sensor.unit ? ' (' + sensor.unit + ')' : '');
+      var select = el('select', { class: 'homey-form-select', id: id, 'data-sensor-id': sensor.id }, [
+        el('option', { value: '', text: t('none') }),
+      ]);
+      groups.forEach(function (group) {
+        var optgroup = el('optgroup', { label: group.name || t('no_zone') });
+        group.options.forEach(function (option) {
+          optgroup.appendChild(el('option', { value: option.value, text: option.label }));
+        });
+        select.appendChild(optgroup);
+      });
+
+      var wanted = (box.selection && box.selection[sensor.id]) || '';
+      select.value = state.optionsByValue[wanted] ? wanted : '';
+
+      var warning = el('div', { class: 'ss-warning ss-hidden' });
+      select.addEventListener('change', function () { updateWarning(select, sensor, warning); });
+      updateWarning(select, sensor, warning);
+
+      return el('div', { class: 'homey-form-group' }, [
+        el('label', { class: 'homey-form-label', for: id, text: label }),
+        select,
+        warning,
+      ]);
+    }
+
+    function renderBox(box, groups) {
+      var title = box.name + (box.shared ? ' (' + t('shared') + ')' : '');
+      var fieldset = el('fieldset', { class: 'homey-form-fieldset ss-box', 'data-box-id': box.id }, [
+        el('legend', { class: 'homey-form-legend', text: title }),
+        el('div', { class: 'ss-box-id', text: box.id }),
+      ]);
+
+      if (state.data.mode === 'pair' && !state.data.selectionKnown) {
+        var checkbox = el('input', { type: 'checkbox', class: 'homey-form-checkbox-input ss-include-input' });
+        checkbox.checked = state.data.boxes.length === 1;
+        fieldset.appendChild(el('label', { class: 'ss-include' }, [checkbox, t('include')]));
+      }
+      if (box.exposure === 'indoor') {
+        fieldset.appendChild(el('p', { class: 'ss-warning', text: t('indoor_box') }));
+      }
+      if (!box.sensors.length) {
+        fieldset.appendChild(el('p', { class: 'ss-note', text: t('no_sensors') }));
+      }
+      box.sensors.forEach(function (sensor) {
+        fieldset.appendChild(renderSensor(box, sensor, groups));
+      });
+      return fieldset;
+    }
+
+    function render() {
+      var data = state.data;
+      state.optionsByValue = {};
+      data.options.forEach(function (option) { state.optionsByValue[option.value] = option; });
+      var groups = groupOptions(data.options);
+
+      form.textContent = '';
+      document.getElementById('ss-account').textContent = data.account ? t('account', { account: data.account }) : '';
+
+      if (data.mode === 'repair' && data.needsLogin) setAlert(t('need_login'));
+      else if (data.mode === 'pair' && data.boxes.length === 0) setAlert(t('no_boxes_left'));
+      else if (!data.options.length) setAlert(t('no_options'));
+      else setAlert('');
+
+      data.boxes.forEach(function (box) { form.appendChild(renderBox(box, groups)); });
+
+      saveButton.textContent = data.mode === 'pair' ? t('add') : t('save');
+      show(saveButton, data.boxes.length > 0);
+      show(refreshButton, data.mode === 'repair');
+      show(reloginButton, data.mode === 'repair');
+    }
+
+    function selectionOf(fieldset) {
+      var selection = {};
+      fieldset.querySelectorAll('select[data-sensor-id]').forEach(function (select) {
+        selection[select.getAttribute('data-sensor-id')] = select.value;
+      });
+      return selection;
+    }
+
+    function fieldsets() {
+      return Array.prototype.slice.call(form.querySelectorAll('fieldset[data-box-id]'));
+    }
+
+    async function load() {
+      Homey.showLoadingOverlay();
+      try {
+        state.data = await Homey.emit('get_link_data');
+        render();
+      } catch (err) {
+        setAlert(errorText(err));
+        show(saveButton, false);
+      } finally {
+        Homey.hideLoadingOverlay();
+      }
+    }
+
+    async function savePair() {
+      var boxes = fieldsets()
+        .filter(function (fieldset) {
+          var include = fieldset.querySelector('.ss-include-input');
+          return !include || include.checked;
+        })
+        .map(function (fieldset) {
+          return { id: fieldset.getAttribute('data-box-id'), selection: selectionOf(fieldset) };
+        });
+      if (!boxes.length) {
+        Homey.alert(t('select_one'));
+        return;
+      }
+      Homey.showLoadingOverlay();
+      try {
+        var devices = await Homey.emit('build_devices', { boxes: boxes });
+        for (var i = 0; i < devices.length; i++) {
+          await Homey.createDevice(devices[i]);
+        }
+        Homey.done();
+      } catch (err) {
+        Homey.hideLoadingOverlay();
+        Homey.alert(errorText(err));
+      }
+    }
+
+    async function saveRepair() {
+      var fieldset = fieldsets()[0];
+      Homey.showLoadingOverlay();
+      try {
+        await Homey.emit('save_link', { selection: selectionOf(fieldset) });
+        Homey.done();
+      } catch (err) {
+        Homey.hideLoadingOverlay();
+        Homey.alert(errorText(err));
+      }
+    }
+
+    async function refreshSensors() {
+      var fieldset = fieldsets()[0];
+      var current = fieldset ? selectionOf(fieldset) : {};
+      Homey.showLoadingOverlay();
+      try {
+        var result = await Homey.emit('refresh_sensors');
+        if (!result.ok && result.needLogin) {
+          state.data.needsLogin = true;
+          render();
+          return;
+        }
+        // Keep choices the user made but did not save yet.
+        result.box.selection = Object.assign({}, result.box.selection, current);
+        state.data.boxes = [result.box];
+        render();
+        Homey.alert(t('refreshed'), 'info');
+      } catch (err) {
+        Homey.alert(errorText(err));
+      } finally {
+        Homey.hideLoadingOverlay();
+      }
+    }
+
+    document.getElementById('ss-title').textContent = t('title');
+    document.getElementById('ss-intro').textContent = t('intro');
+    document.getElementById('ss-outdoor').textContent = t('outdoor_hint');
+    refreshButton.textContent = t('refresh');
+    reloginButton.textContent = t('relogin');
+    show(saveButton, false);
+
+    saveButton.addEventListener('click', function () {
+      if (!state.data) return;
+      (state.data.mode === 'pair' ? savePair() : saveRepair());
+    });
+    refreshButton.addEventListener('click', function () { refreshSensors(); });
+    reloginButton.addEventListener('click', function () { Homey.showView('login_credentials'); });
+
+    load();
+  }());
+</script>

@@ -1,0 +1,94 @@
+{
+  "name": {
+    "en": "senseBox",
+    "nl": "senseBox"
+  },
+  "class": "sensor",
+  "capabilities": ["last_upload", "upload_failures"],
+  "platforms": ["local"],
+  "connectivity": ["cloud"],
+  "images": {
+    "small": "{{driverAssetsPath}}/images/small.png",
+    "large": "{{driverAssetsPath}}/images/large.png",
+    "xlarge": "{{driverAssetsPath}}/images/xlarge.png"
+  },
+  "pair": [
+    {
+      "id": "login_credentials",
+      "template": "login_credentials",
+      "options": {
+        "title": {
+          "en": "Sign in to openSenseMap",
+          "nl": "Inloggen bij openSenseMap"
+        },
+        "usernameLabel": {
+          "en": "E-mail address or user name",
+          "nl": "E-mailadres of gebruikersnaam"
+        },
+        "usernamePlaceholder": {
+          "en": "you@example.com",
+          "nl": "jij@voorbeeld.nl"
+        },
+        "passwordLabel": {
+          "en": "Password",
+          "nl": "Wachtwoord"
+        },
+        "passwordPlaceholder": {
+          "en": "Password",
+          "nl": "Wachtwoord"
+        }
+      },
+      "navigation": {
+        "next": "list_devices"
+      }
+    },
+    {
+      "id": "list_devices",
+      "template": "list_devices",
+      "navigation": {
+        "prev": "login_credentials",
+        "next": "koppelen"
+      }
+    },
+    {
+      "id": "koppelen",
+      "navigation": {
+        "prev": "list_devices"
+      }
+    }
+  ],
+  "repair": [
+    {
+      "id": "koppelen"
+    },
+    {
+      "id": "login_credentials",
+      "template": "login_credentials",
+      "options": {
+        "title": {
+          "en": "Sign in to openSenseMap again",
+          "nl": "Opnieuw inloggen bij openSenseMap"
+        },
+        "usernameLabel": {
+          "en": "E-mail address or user name",
+          "nl": "E-mailadres of gebruikersnaam"
+        },
+        "usernamePlaceholder": {
+          "en": "you@example.com",
+          "nl": "jij@voorbeeld.nl"
+        },
+        "passwordLabel": {
+          "en": "Password",
+          "nl": "Wachtwoord"
+        },
+        "passwordPlaceholder": {
+          "en": "Password",
+          "nl": "Wachtwoord"
+        }
+      },
+      "navigation": {
+        "next": "koppelen"
+      }
+    }
+  ]
+}

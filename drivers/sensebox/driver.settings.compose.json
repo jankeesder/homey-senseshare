@@ -1,0 +1,75 @@
+[
+  {
+    "type": "group",
+    "label": {
+      "en": "Upload",
+      "nl": "Uploaden"
+    },
+    "children": [
+      {
+        "id": "upload_enabled",
+        "type": "checkbox",
+        "value": true,
+        "label": {
+          "en": "Upload automatically",
+          "nl": "Automatisch uploaden"
+        },
+        "hint": {
+          "en": "When off, nothing is sent on the interval. The Flow cards \"Upload now\" and \"Send value\" keep working.",
+          "nl": "Als dit uit staat, wordt er niets per interval verstuurd. De Flow-kaarten \"Upload nu\" en \"Stuur waarde\" blijven werken."
+        }
+      },
+      {
+        "id": "upload_interval",
+        "type": "number",
+        "value": 5,
+        "min": 1,
+        "max": 1440,
+        "step": 1,
+        "units": {
+          "en": "min",
+          "nl": "min"
+        },
+        "label": {
+          "en": "Upload interval",
+          "nl": "Uploadinterval"
+        },
+        "hint": {
+          "en": "How often the current readings are sent. Minimum 1 minute. Only readings that changed since the previous upload are sent.",
+          "nl": "Hoe vaak de actuele metingen worden verstuurd. Minimaal 1 minuut. Alleen metingen die sinds de vorige upload zijn veranderd, worden verstuurd."
+        }
+      }
+    ]
+  },
+  {
+    "type": "group",
+    "label": {
+      "en": "openSenseMap",
+      "nl": "openSenseMap"
+    },
+    "children": [
+      {
+        "id": "box_id",
+        "type": "label",
+        "value": "",
+        "label": {
+          "en": "senseBox ID",
+          "nl": "senseBox-ID"
+        }
+      },
+      {
+        "id": "account",
+        "type": "label",
+        "value": "",
+        "label": {
+          "en": "Account",
+          "nl": "Account"
+        },
+        "hint": {
+          "en": "To sign in again, change the links or reload the sensor list, open this device and choose Repair.",
+          "nl": "Om opnieuw in te loggen, de koppelingen te wijzigen of de sensorlijst opnieuw op te halen: open dit apparaat en kies Repareren."
+        }
+      }
+    ]
+  }
+]

@@ -1,0 +1,14 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Failed uploads",
+    "nl": "Mislukte uploads"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "decimals": 0,
+  "min": 0,
+  "icon": "/assets/capabilities/upload_failures.svg",
+  "insights": true
+}
