@@ -1,23 +1,3 @@
-Your Homey already knows how warm, humid or dusty it is outside. SenseShare shares those readings as open data on openSenseMap, the citizen science map for environmental data. No extra hardware needed.
+Your Homey already knows how warm, humid or dusty it is outside. SenseShare shares those readings as open data on openSenseMap, the citizen science map for environmental data, using the sensors you already have. Your neighbourhood appears on the map, schools, researchers and municipalities can use the data, and you get a free measurement history that you can compare with stations nearby. The more stations take part, the better the local picture becomes for everyone.
 
-Why join?
-- Put your neighbourhood on the map: many areas still have no measuring station at all.
-- Open data that schools, researchers and municipalities use for lessons, studies and policy.
-- No extra hardware: you use the sensors you already have in Homey.
-- Free measurement history, and compare your readings with stations nearby on the map.
-- A better picture for everyone: the more stations, the more reliable local data becomes.
-
-How it works
-1. Create a free account and a senseBox on opensensemap.org, with a sensor for every reading you want to share.
-2. In Homey, add a senseBox device, sign in, choose your senseBox and pick which Homey device provides each reading.
-3. SenseShare sends the current readings every 5 minutes (adjustable), also when a value did not change, so the graph on the map gets one point per interval.
-
-Good to know
-- Only outdoor sensors are useful. Indoor readings give the wrong picture on the map.
-- Units are converted where possible, for example mbar to Pa or km/h to m/s.
-- The location of your senseBox is public. You can choose a less precise location on opensensemap.org, for example the middle of your street.
-- Placement matters: in the shade, out of the rain, at least a metre from walls and roofs.
-- Flow cards: upload now, send any value (for example a Logic variable) to a sensor, and a trigger when an upload fails.
-- Requires Homey Pro or Homey Self-Hosted Server: the app reads your other devices through the Homey Web API.
-
-SenseShare is an independent app. It is not made by or affiliated with openSenseMap or senseBox.
+Create a free senseBox on openSenseMap, add it in Homey and choose which Homey device provides each reading. SenseShare then sends the current values on a regular schedule and converts units where needed. Only share outdoor sensors that hang in the shade and away from walls, and keep in mind that the location of your senseBox is public, so you may want to choose a less precise spot such as the middle of your street. SenseShare works on Homey Pro and Homey Self-Hosted Server, and is an independent app that is not made by or affiliated with openSenseMap or senseBox.
