@@ -10,7 +10,7 @@ Waarom meedoen?
 Zo werkt het
 1. Maak op opensensemap.org een gratis account en een senseBox aan, met een sensor voor elke meting die je wilt delen.
 2. Voeg in Homey een senseBox-apparaat toe, log in, kies je senseBox en geef per meting aan welk Homey-apparaat de waarde levert.
-3. SenseShare verstuurt de actuele metingen elke 5 minuten (instelbaar). Alleen nieuwe metingen worden verstuurd.
+3. SenseShare verstuurt de actuele metingen elke 5 minuten (instelbaar), ook als een waarde niet is veranderd. Zo krijgt de grafiek op de kaart een punt per interval.
 
 Goed om te weten
 - Alleen buitensensoren zijn zinvol. Binnenmetingen geven een verkeerd beeld op de kaart.

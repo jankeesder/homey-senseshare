@@ -156,10 +156,36 @@ describe('SenseBoxDevice', () => {
     assert.notEqual(device.getCapabilityValue('last_upload'), 'capability.never');
   });
 
-  it('does not send the same reading twice', async () => {
-    const { device, fetch } = await setup({ responses: [ok] });
+  it('does not send the same reading twice when unchanged readings are off', async () => {
+    const { device, fetch } = await setup({ responses: [ok], settings: { upload_unchanged: false } });
 
     await device.uploadNow();
+    await device.uploadNow();
+
+    assert.equal(fetch.calls.length, 1);
+  });
+
+  it('sends unchanged readings again, stamped with the upload time (default)', async () => {
+    const { device, fetch, homeyDevices } = await setup({ responses: [ok, ok] });
+    const readingAt = homeyDevices.weather.capabilitiesObj.measure_temperature.lastUpdated;
+
+    await device.uploadNow();
+    const before = Date.now();
+    await device.uploadNow();
+
+    assert.equal(fetch.calls.length, 2);
+    assert.deepEqual(fetch.calls[0].body.map((m) => m.createdAt), [readingAt, readingAt]);
+    const second = fetch.calls[1].body;
+    assert.deepEqual(second.map((m) => [m.sensor, m.value]), [[TEMP, '4.25'], [HUM, '91']]);
+    for (const m of second) assert.ok(Date.parse(m.createdAt) >= before, `${m.createdAt} should be the upload time`);
+  });
+
+  it('repeats nothing for a device that reported nothing for an hour', async () => {
+    const { device, fetch, homeyDevices } = await setup({ responses: [ok] });
+    await device.uploadNow();
+    const old = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+    for (const capability of Object.values(homeyDevices.weather.capabilitiesObj)) capability.lastUpdated = old;
+
     await device.uploadNow();
 
     assert.equal(fetch.calls.length, 1);
@@ -259,6 +285,7 @@ describe('SenseBoxDevice', () => {
 
   it('is available again and uploads after signing in via repair', async () => {
     const { device, fetch } = await setup({
+      settings: { upload_unchanged: false },
       responses: [
         { status: 401, json: { message: 'Box access token not valid!' } },
         { status: 403, json: { message: 'Invalid JWT authorization.' } },

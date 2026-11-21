@@ -250,6 +250,8 @@ class SenseBoxDevice extends Homey.Device {
       lastQueued,
       validSensorIds: new Set(sensors.map((sensor) => sensor.id)),
       sensorUnits: Object.fromEntries(sensors.map((sensor) => [sensor.id, sensor.unit])),
+      // Missing on devices paired before this setting existed: on by default.
+      repeatUnchanged: this.getSetting('upload_unchanged') !== false,
     });
 
     const notable = skipped.filter((entry) => entry.reason !== 'unchanged');

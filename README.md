@@ -51,7 +51,8 @@ Homey-app (Apps SDK v3) die de metingen van je bestaande Homey-apparaten als ope
 | Instelling | Standaard | Uitleg |
 |---|---|---|
 | Automatisch uploaden | aan | Uit = niets versturen per interval. De Flow-kaarten blijven werken. |
-| Uploadinterval | 5 min | Minimaal 1 minuut. |
+| Uploadinterval | 5 min | Minimaal 1 minuut. Kies geen korter interval dan je sensoren meten: een weerstation dat elke 5 minuten meet, stuurt bij 1 minuut vijf keer dezelfde meting en de grafiek lijkt nauwkeuriger dan hij is. |
+| Ook onveranderde waarden versturen | aan | Stuurt bij elke upload de actuele waarde van elke gekoppelde sensor, ook als die niet is veranderd. Zo krijgt de grafiek een punt per interval. Uit = alleen nieuwe metingen. |
 
 ### 4. Koppelingen wijzigen, sensorlijst verversen, opnieuw inloggen
 
@@ -75,11 +76,13 @@ Open het apparaat → instellingen → **Repareren**. Je komt in hetzelfde koppe
 
 ## Hoe het werkt
 
-- Elke interval leest de app via de Homey Web API (`homey-api`, `HomeyAPI.createAppAPI`) de gekoppelde capabilities en stuurt alle nieuwe waarden in **één** request naar `POST /boxes/{boxId}/data`.
+- Elke interval leest de app via de Homey Web API (`homey-api`, `HomeyAPI.createAppAPI`) de gekoppelde capabilities en stuurt alle waarden in **één** request naar `POST /boxes/{boxId}/data`.
 - **Eenheden** worden omgerekend naar de eenheid van de openSenseMap-sensor als beide eenheden bekend zijn en dezelfde grootheid meten: luchtdruk (Pa, hPa/mbar, kPa, bar, mmHg, inHg), temperatuur (°C, °F, K), snelheid (m/s, km/h, mph, knopen, ft/s), lengte/neerslag (mm, cm, m, inch) en concentratie (ng/m³, µg/m³, mg/m³). Omgerekende waarden worden afgerond op 7 significante cijfers. Waarden die via de Flow-kaart *Stuur waarde* binnenkomen, worden niet omgerekend.
-- `createdAt` is het `lastUpdated`-tijdstip van de capability, in UTC. Een tijdstip in de toekomst (klok van Homey loopt voor) wordt teruggezet naar "nu", omdat openSenseMap dat anders weigert.
-- **Alleen nieuwe metingen**: een meting wordt alleen verstuurd als `lastUpdated` is veranderd sinds de vorige keer. Zo komen er geen dubbele punten op de kaart.
-- **Overgeslagen** worden: lege (`null`) en niet-numerieke waarden, apparaten die niet beschikbaar zijn, verwijderde apparaten/capabilities en metingen ouder dan 1 uur.
+- **Nieuwe metingen** krijgen als `createdAt` het `lastUpdated`-tijdstip van de capability, in UTC. Een tijdstip in de toekomst (klok van Homey loopt voor) wordt teruggezet naar "nu", omdat openSenseMap dat anders weigert.
+- **Onveranderde waarden** (instelling *Ook onveranderde waarden versturen*, standaard aan): Homey verschuift `lastUpdated` alleen als de waarde verandert. Een waarde die gelijk blijft, is dus nog steeds de actuele waarde. De app stuurt die opnieuw met het moment van de upload als `createdAt`, zoals een senseBox met eigen firmware die elke interval zijn sensoren uitleest. Zo krijgt de grafiek een regelmatige reeks in plaats van gaten bij stabiel weer.
+- Een waarde wordt **niet herhaald** als het Homey-apparaat niet beschikbaar is, of als **geen enkele** capability van dat apparaat het afgelopen uur is bijgewerkt. Een stabiele luchtdruk blijft dus doorlopen zolang het weerstation andere waarden (temperatuur, batterij, signaal) meldt, maar een uitgevallen apparaat geeft een gat in de grafiek in plaats van een nepvlakke lijn.
+- Staat de instelling uit, dan gaat een meting alleen mee als `lastUpdated` is veranderd sinds de vorige keer.
+- **Overgeslagen** worden: lege (`null`) en niet-numerieke waarden, apparaten die niet beschikbaar zijn, verwijderde apparaten/capabilities, en metingen ouder dan 1 uur die niet herhaald mogen worden (zie hierboven).
 - openSenseMap weigert de **hele** batch als één meting ongeldig is. Daarom controleert de app alles vooraf.
 - **Netwerkfouten en 5xx**: tot 3 nieuwe pogingen met backoff (30 s, 60 s, 120 s, met wat spreiding), maar nooit voorbij het volgende interval. Wat niet lukt, blijft in de wachtrij en gaat mee met de volgende upload. Metingen ouder dan 1 uur worden weggegooid.
 - **Inloggen en tokens**:
@@ -93,8 +96,8 @@ Open het apparaat → instellingen → **Repareren**. Je komt in hetzelfde koppe
 
 - **Alleen Homey Pro / Self-Hosted Server.** De app gebruikt `homey:manager:api`; dat is niet toegestaan op Homey Cloud. Apps met deze permissie worden in de App Store strenger beoordeeld; motiveer bij het indienen dat het uitlezen van andere apparaten de kernfunctie is.
 - **De wachtrij staat in het geheugen.** Herstart de app terwijl uploads mislukken, dan gaan de nog niet verstuurde metingen (maximaal een uur) verloren.
-- **Waarden die niet veranderen.** Als een apparaat dezelfde waarde blijft melden zonder dat `lastUpdated` verandert, wordt er niets nieuws verstuurd. openSenseMap kan die sensor dan als inactief tonen.
-- **Sensoren die minder dan eens per uur melden**, worden overgeslagen (meting ouder dan 1 uur).
+- **Een vastgelopen meting blijft doorlopen.** Homey kan niet zien of een waarde gelijk blijft omdat het weer stabiel is of omdat dat ene meetelement kapot is. Zolang het apparaat andere waarden meldt, herhaalt de app de laatste waarde. Zet *Ook onveranderde waarden versturen* uit als je dat niet wilt; dan ontstaan er wel gaten bij stabiele waarden.
+- **Apparaten die minder dan eens per uur iets melden**, worden overgeslagen (meting ouder dan 1 uur).
 - **Omrekenen kan alleen binnen dezelfde grootheid** (zie hierboven). Koppel je bijvoorbeeld lux aan een sensor in W/m², dan krijg je een waarschuwing en gaat de waarde ongewijzigd door.
 - **De boxselectie uit het lijstscherm** wordt doorgegeven via het (ongedocumenteerde) `list_devices_selection`-event. Werkt dat op een toekomstige Homey-versie niet meer, dan toont het koppelscherm alle boxen met een vinkje "Deze senseBox toevoegen".
 - **De teller "Mislukte uploads"** loopt alleen op; hij wordt niet automatisch teruggezet.

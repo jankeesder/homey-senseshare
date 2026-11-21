@@ -10,7 +10,7 @@ Why join?
 How it works
 1. Create a free account and a senseBox on opensensemap.org, with a sensor for every reading you want to share.
 2. In Homey, add a senseBox device, sign in, choose your senseBox and pick which Homey device provides each reading.
-3. SenseShare sends the current readings every 5 minutes (adjustable). Only new readings are sent.
+3. SenseShare sends the current readings every 5 minutes (adjustable), also when a value did not change, so the graph on the map gets one point per interval.
 
 Good to know
 - Only outdoor sensors are useful. Indoor readings give the wrong picture on the map.

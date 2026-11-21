@@ -10,6 +10,7 @@ const {
   toCreatedAt,
   buildManualMeasurement,
   collectMeasurements,
+  isDeviceActive,
   MAX_AGE_MS,
 } = require('../lib/measurements');
 
@@ -200,6 +201,143 @@ describe('collectMeasurements', () => {
     const { measurements } = collectMeasurements({ mapping: { [S1]: mapping[S1] }, devices, now: NOW });
 
     assert.equal(measurements[0].createdAt, NOW.toISOString());
+  });
+});
+
+describe('collectMeasurements with repeatUnchanged', () => {
+  const mapping = {
+    [S1]: { deviceId: 'dev-1', capabilityId: 'measure_temperature' },
+    [S2]: { deviceId: 'dev-1', capabilityId: 'measure_pressure' },
+  };
+  const lastQueued = {
+    [S1]: '2026-11-21T11:55:00.000Z',
+    [S2]: '2026-11-21T11:55:00.000Z',
+  };
+
+  it('sends an unchanged reading again, stamped with now', () => {
+    const devices = {
+      'dev-1': device({
+        measure_temperature: { value: 4.2, lastUpdated: '2026-11-21T11:50:00.000Z' },
+        measure_pressure: { value: 1019.2, lastUpdated: '2026-11-21T11:45:00.000Z' },
+      }),
+    };
+
+    const { measurements, skipped } = collectMeasurements({
+      mapping, devices, lastQueued, now: NOW, repeatUnchanged: true,
+    });
+
+    assert.deepEqual(measurements, [
+      { sensor: S1, value: '4.2', createdAt: NOW.toISOString() },
+      { sensor: S2, value: '1019.2', createdAt: NOW.toISOString() },
+    ]);
+    assert.deepEqual(skipped, []);
+  });
+
+  it('keeps the real time of a new reading', () => {
+    const devices = {
+      'dev-1': device({
+        measure_temperature: { value: 4.4, lastUpdated: '2026-11-21T11:58:00.000Z' },
+        measure_pressure: { value: 1019.2, lastUpdated: '2026-11-21T11:45:00.000Z' },
+      }),
+    };
+
+    const { measurements } = collectMeasurements({
+      mapping, devices, lastQueued, now: NOW, repeatUnchanged: true,
+    });
+
+    assert.deepEqual(measurements.map((m) => [m.sensor, m.createdAt]), [
+      [S1, '2026-11-21T11:58:00.000Z'],
+      [S2, NOW.toISOString()],
+    ]);
+  });
+
+  it('keeps sending a value that has not changed for over an hour while the device reports other values', () => {
+    const devices = {
+      'dev-1': device({
+        measure_temperature: { value: 4.2, lastUpdated: '2026-11-21T11:59:00.000Z' },
+        measure_pressure: { value: 1019.2, lastUpdated: new Date(NOW - 3 * MAX_AGE_MS).toISOString() },
+      }),
+    };
+
+    const { measurements } = collectMeasurements({
+      mapping: { [S2]: mapping[S2] }, devices, now: NOW, repeatUnchanged: true,
+    });
+
+    assert.deepEqual(measurements, [{ sensor: S2, value: '1019.2', createdAt: NOW.toISOString() }]);
+  });
+
+  it('does not repeat values of a device that reported nothing for an hour', () => {
+    const old = new Date(NOW - MAX_AGE_MS - 1000).toISOString();
+    const devices = {
+      'dev-1': device({
+        measure_temperature: { value: 4.2, lastUpdated: old },
+        measure_pressure: { value: 1019.2, lastUpdated: old },
+      }),
+    };
+
+    const { measurements, skipped } = collectMeasurements({
+      mapping, devices, lastQueued: { [S1]: old }, now: NOW, repeatUnchanged: true,
+    });
+
+    assert.deepEqual(measurements, []);
+    assert.deepEqual(skipped, [
+      { sensorId: S1, reason: 'device_inactive' },
+      { sensorId: S2, reason: 'stale' },
+    ]);
+  });
+
+  it('does not repeat values of an unavailable device, or invalid values', () => {
+    const { measurements, skipped } = collectMeasurements({
+      mapping,
+      devices: {
+        'dev-1': device({
+          measure_temperature: { value: 4.2, lastUpdated: '2026-11-21T11:50:00.000Z' },
+        }, { available: false }),
+      },
+      lastQueued,
+      now: NOW,
+      repeatUnchanged: true,
+    });
+
+    assert.deepEqual(measurements, []);
+    assert.deepEqual(skipped.map((s) => s.reason), ['device_unavailable', 'device_unavailable']);
+
+    const invalid = collectMeasurements({
+      mapping: { [S1]: mapping[S1] },
+      devices: { 'dev-1': device({ measure_temperature: { value: null, lastUpdated: '2026-11-21T11:59:00.000Z' } }) },
+      lastQueued,
+      now: NOW,
+      repeatUnchanged: true,
+    });
+    assert.deepEqual(invalid.skipped, [{ sensorId: S1, reason: 'invalid_value' }]);
+  });
+
+  it('converts repeated values like new ones', () => {
+    const devices = {
+      'dev-1': device({ measure_pressure: { value: 1019.2, units: 'mbar', lastUpdated: '2026-11-21T11:45:00.000Z' } }),
+    };
+
+    const { measurements } = collectMeasurements({
+      mapping: { [S2]: mapping[S2] }, devices, lastQueued, now: NOW, repeatUnchanged: true, sensorUnits: { [S2]: 'Pa' },
+    });
+
+    assert.deepEqual(measurements, [{ sensor: S2, value: '101920', createdAt: NOW.toISOString() }]);
+  });
+});
+
+describe('isDeviceActive', () => {
+  it('is true when any capability was updated within the hour', () => {
+    assert.equal(isDeviceActive(device({
+      measure_pressure: { lastUpdated: '2026-11-21T09:00:00.000Z' },
+      measure_battery: { lastUpdated: '2026-11-21T11:30:00.000Z' },
+    }), NOW), true);
+  });
+
+  it('is false when nothing was updated within the hour, or no time is known', () => {
+    assert.equal(isDeviceActive(device({ measure_pressure: { lastUpdated: '2026-11-21T10:30:00.000Z' } }), NOW), false);
+    assert.equal(isDeviceActive(device({ button: { lastUpdated: null }, measure_x: { lastUpdated: 'junk' } }), NOW), false);
+    assert.equal(isDeviceActive(device({}), NOW), false);
+    assert.equal(isDeviceActive(null, NOW), false);
   });
 });
 

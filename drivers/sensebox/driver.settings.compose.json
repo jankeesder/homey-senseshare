@@ -35,8 +35,21 @@
           "nl": "Uploadinterval"
         },
         "hint": {
-          "en": "How often the current readings are sent. Minimum 1 minute. Only readings that changed since the previous upload are sent.",
-          "nl": "Hoe vaak de actuele metingen worden verstuurd. Minimaal 1 minuut. Alleen metingen die sinds de vorige upload zijn veranderd, worden verstuurd."
+          "en": "How often the current readings are sent (minimum 1 minute). Do not choose a shorter interval than your sensors measure: a weather station that measures every 5 minutes would otherwise send the same reading several times, and the graph looks more precise than it is.",
+          "nl": "Hoe vaak de actuele metingen worden verstuurd (minimaal 1 minuut). Kies geen korter interval dan je sensoren meten: een weerstation dat elke 5 minuten meet, stuurt anders meerdere keren dezelfde meting en de grafiek lijkt nauwkeuriger dan hij is."
+        }
+      },
+      {
+        "id": "upload_unchanged",
+        "type": "checkbox",
+        "value": true,
+        "label": {
+          "en": "Also send unchanged readings",
+          "nl": "Ook onveranderde waarden versturen"
+        },
+        "hint": {
+          "en": "Sends the current value of every linked sensor on each upload, also when it did not change. The graph on openSenseMap then gets one point per interval, like a senseBox with its own firmware. A value is not repeated when the Homey device is unavailable or has reported nothing for an hour. When off, only new readings are sent.",
+          "nl": "Stuurt bij elke upload de actuele waarde van elke gekoppelde sensor, ook als die niet is veranderd. De grafiek op openSenseMap krijgt zo een punt per interval, zoals bij een senseBox met eigen firmware. Een waarde wordt niet herhaald als het Homey-apparaat niet beschikbaar is of al een uur niets heeft gemeld. Uit: alleen nieuwe metingen versturen."
         }
       }
     ]
