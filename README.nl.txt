@@ -14,6 +14,7 @@ Zo werkt het
 
 Goed om te weten
 - Alleen buitensensoren zijn zinvol. Binnenmetingen geven een verkeerd beeld op de kaart.
+- Eenheden worden waar mogelijk omgerekend, bijvoorbeeld mbar naar Pa of km/h naar m/s.
 - De locatie van je senseBox is openbaar. Op opensensemap.org kun je een minder precieze locatie kiezen, bijvoorbeeld het midden van je straat.
 - Een goede plaatsing is belangrijk: in de schaduw, uit de regen, minstens een meter van muren en daken.
 - Flow-kaarten: nu uploaden, een willekeurige waarde (bijvoorbeeld een Logica-variabele) naar een sensor sturen, en een trigger als een upload mislukt.

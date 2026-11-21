@@ -37,7 +37,7 @@
       "indoor_box": "Deze senseBox staat op openSenseMap ingesteld als \"binnen\".",
       "no_sensors": "Deze senseBox heeft nog geen sensoren. Voeg ze toe op opensensemap.org en haal de sensorlijst opnieuw op.",
       "no_options": "Er zijn geen Homey-apparaten met numerieke metingen gevonden.",
-      "unit_warning": "Eenheden verschillen: Homey meet in __homey__, openSenseMap verwacht __osem__.",
+      "unit_warning": "Eenheden verschillen en zijn niet om te rekenen: Homey meet in __homey__, openSenseMap verwacht __osem__.",
       "unit_unknown": "Homey heeft geen eenheid voor deze meting; controleer of die overeenkomt met __osem__.",
       "no_boxes_left": "Alle senseBoxen van dit account zijn al toegevoegd.",
       "select_one": "Kies minstens één senseBox.",
@@ -46,7 +46,10 @@
       "refreshed": "Sensorlijst bijgewerkt.",
       "relogin": "Opnieuw inloggen",
       "add": "Apparaten toevoegen",
-      "save": "Opslaan"
+      "save": "Opslaan",
+      "unit_convert": "Wordt omgerekend van __homey__ naar __osem__.",
+      "show_all": "Toon alle meetwaarden",
+      "no_match": "Geen passende meetwaarden gevonden. Vink \"Toon alle meetwaarden\" aan om toch te kiezen."
     }
   }
 }

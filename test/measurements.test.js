@@ -202,3 +202,47 @@ describe('collectMeasurements', () => {
     assert.equal(measurements[0].createdAt, NOW.toISOString());
   });
 });
+
+describe('collectMeasurements unit conversion', () => {
+  const recent = '2026-11-21T11:58:00.000Z';
+  const pressureLink = { [S1]: { deviceId: 'dev-1', capabilityId: 'measure_pressure' } };
+  const devices = {
+    'dev-1': device({ measure_pressure: { value: 1013.2, units: 'mbar', lastUpdated: recent } }),
+  };
+
+  it('converts the reading to the unit of the openSenseMap sensor', () => {
+    const { measurements } = collectMeasurements({
+      mapping: pressureLink, devices, sensorUnits: { [S1]: 'Pa' }, now: NOW,
+    });
+    assert.equal(measurements[0].value, '101320');
+  });
+
+  it('sends equal units unchanged', () => {
+    const { measurements } = collectMeasurements({
+      mapping: pressureLink, devices, sensorUnits: { [S1]: 'hPa' }, now: NOW,
+    });
+    assert.equal(measurements[0].value, '1013.2');
+  });
+
+  it('sends the value unchanged when the units cannot be converted or are unknown', () => {
+    for (const unit of ['°C', '', undefined]) {
+      const { measurements } = collectMeasurements({
+        mapping: pressureLink, devices, sensorUnits: { [S1]: unit }, now: NOW,
+      });
+      assert.equal(measurements[0].value, '1013.2');
+    }
+  });
+
+  it('rounds converted values to 7 significant digits', () => {
+    const fahrenheit = {
+      'dev-1': device({ measure_temperature: { value: 70, units: '°F', lastUpdated: recent } }),
+    };
+    const { measurements } = collectMeasurements({
+      mapping: { [S1]: { deviceId: 'dev-1', capabilityId: 'measure_temperature' } },
+      devices: fahrenheit,
+      sensorUnits: { [S1]: '°C' },
+      now: NOW,
+    });
+    assert.equal(measurements[0].value, '21.11111');
+  });
+});

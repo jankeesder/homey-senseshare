@@ -2,7 +2,7 @@
 
 const Homey = require('homey');
 const { listCapabilityOptions, mappingFromSelection } = require('../../lib/homeyDevices');
-const { normalizeUnit } = require('../../lib/units');
+const { describeUnit } = require('../../lib/units');
 
 /** Box data for the link screen: never includes the access token. */
 function publicBox(box, extra = {}) {
@@ -11,13 +11,17 @@ function publicBox(box, extra = {}) {
     name: box.name,
     shared: Boolean(box.shared),
     exposure: box.exposure || '',
-    sensors: (box.sensors || []).map((sensor) => ({
-      id: sensor.id,
-      title: sensor.title,
-      unit: sensor.unit,
-      sensorType: sensor.sensorType,
-      normalizedUnit: normalizeUnit(sensor.unit),
-    })),
+    sensors: (box.sensors || []).map((sensor) => {
+      const unitInfo = describeUnit(sensor.unit);
+      return {
+        id: sensor.id,
+        title: sensor.title,
+        unit: sensor.unit,
+        sensorType: sensor.sensorType,
+        normalizedUnit: unitInfo.normalized,
+        quantity: unitInfo.quantity,
+      };
+    }),
     ...extra,
   };
 }

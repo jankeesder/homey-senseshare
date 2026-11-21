@@ -41,7 +41,10 @@ Homey-app (Apps SDK v3) die de metingen van je bestaande Homey-apparaten als ope
 1. Apparaat toevoegen → SenseShare → senseBox.
 2. Log in met je openSenseMap-e-mailadres (of gebruikersnaam) en wachtwoord. De login wordt meteen gecontroleerd; je krijgt een duidelijke melding bij een verkeerd wachtwoord of als openSenseMap niet bereikbaar is.
 3. Kies één of meer senseBoxen (naam en id worden getoond).
-4. Koppel in het scherm **Sensoren koppelen** elke sensor aan een Homey-apparaat en een capability, bijvoorbeeld *Weerstation – Temperatuur (measure_temperature)*. Laat een sensor leeg om hem over te slaan. Als de eenheid in Homey anders is dan op openSenseMap, zie je een waarschuwing. Je kunt de koppeling dan toch opslaan.
+4. Koppel in het scherm **Sensoren koppelen** elke sensor aan een Homey-apparaat en een capability, bijvoorbeeld *Weerstation – Temperatuur (measure_temperature)*. Laat een sensor leeg om hem over te slaan.
+   - Per sensor zie je alleen meetwaarden (`measure_*`, `meter_*`) waarvan de eenheid past: dezelfde eenheid, of een eenheid die de app kan omrekenen. Met **Toon alle meetwaarden** zie je alles, bijvoorbeeld voor een apparaat zonder eenheid.
+   - Rekent de app om, dan staat er bijvoorbeeld *"Wordt omgerekend van mbar naar Pa."*. Bij eenheden die niet om te rekenen zijn, zie je een waarschuwing. Je kunt de koppeling dan toch opslaan.
+   - Kies bij luchtdruk de **stationsdruk** als je apparaat die heeft (niet de druk op zeeniveau): senseBoxen op openSenseMap sturen de druk zoals die ter plekke gemeten wordt.
 
 ### 3. Instellingen per apparaat
 
@@ -73,6 +76,7 @@ Open het apparaat → instellingen → **Repareren**. Je komt in hetzelfde koppe
 ## Hoe het werkt
 
 - Elke interval leest de app via de Homey Web API (`homey-api`, `HomeyAPI.createAppAPI`) de gekoppelde capabilities en stuurt alle nieuwe waarden in **één** request naar `POST /boxes/{boxId}/data`.
+- **Eenheden** worden omgerekend naar de eenheid van de openSenseMap-sensor als beide eenheden bekend zijn en dezelfde grootheid meten: luchtdruk (Pa, hPa/mbar, kPa, bar, mmHg, inHg), temperatuur (°C, °F, K), snelheid (m/s, km/h, mph, knopen, ft/s), lengte/neerslag (mm, cm, m, inch) en concentratie (ng/m³, µg/m³, mg/m³). Omgerekende waarden worden afgerond op 7 significante cijfers. Waarden die via de Flow-kaart *Stuur waarde* binnenkomen, worden niet omgerekend.
 - `createdAt` is het `lastUpdated`-tijdstip van de capability, in UTC. Een tijdstip in de toekomst (klok van Homey loopt voor) wordt teruggezet naar "nu", omdat openSenseMap dat anders weigert.
 - **Alleen nieuwe metingen**: een meting wordt alleen verstuurd als `lastUpdated` is veranderd sinds de vorige keer. Zo komen er geen dubbele punten op de kaart.
 - **Overgeslagen** worden: lege (`null`) en niet-numerieke waarden, apparaten die niet beschikbaar zijn, verwijderde apparaten/capabilities en metingen ouder dan 1 uur.
@@ -91,7 +95,7 @@ Open het apparaat → instellingen → **Repareren**. Je komt in hetzelfde koppe
 - **De wachtrij staat in het geheugen.** Herstart de app terwijl uploads mislukken, dan gaan de nog niet verstuurde metingen (maximaal een uur) verloren.
 - **Waarden die niet veranderen.** Als een apparaat dezelfde waarde blijft melden zonder dat `lastUpdated` verandert, wordt er niets nieuws verstuurd. openSenseMap kan die sensor dan als inactief tonen.
 - **Sensoren die minder dan eens per uur melden**, worden overgeslagen (meting ouder dan 1 uur).
-- **Eenheden worden niet omgerekend**, alleen gecontroleerd. Koppel je km/u aan een sensor in m/s, dan krijg je een waarschuwing maar geen omrekening.
+- **Omrekenen kan alleen binnen dezelfde grootheid** (zie hierboven). Koppel je bijvoorbeeld lux aan een sensor in W/m², dan krijg je een waarschuwing en gaat de waarde ongewijzigd door.
 - **De boxselectie uit het lijstscherm** wordt doorgegeven via het (ongedocumenteerde) `list_devices_selection`-event. Werkt dat op een toekomstige Homey-versie niet meer, dan toont het koppelscherm alle boxen met een vinkje "Deze senseBox toevoegen".
 - **De teller "Mislukte uploads"** loopt alleen op; hij wordt niet automatisch teruggezet.
 - **Gedeelde boxen** (sharedBoxes) worden ook getoond. Als openSenseMap daarvoor geen access token meegeeft en de box authenticatie vereist, lukt uploaden niet.

@@ -14,6 +14,7 @@ How it works
 
 Good to know
 - Only outdoor sensors are useful. Indoor readings give the wrong picture on the map.
+- Units are converted where possible, for example mbar to Pa or km/h to m/s.
 - The location of your senseBox is public. You can choose a less precise location on opensensemap.org, for example the middle of your street.
 - Placement matters: in the shade, out of the rain, at least a metre from walls and roofs.
 - Flow cards: upload now, send any value (for example a Logic variable) to a sensor, and a trigger when an upload fails.

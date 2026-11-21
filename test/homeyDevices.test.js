@@ -123,3 +123,26 @@ describe('mappingFromSelection / selectionFromMapping', () => {
     assert.deepEqual(selectionFromMapping(mappingFromSelection(selection, sensors)), selection);
   });
 });
+
+describe('capability options for filtering', () => {
+  it('marks measurements and the quantity of their unit', async () => {
+    const api = fakeApi({
+      t: {
+        id: 't',
+        name: 'Thermostaat',
+        capabilitiesObj: {
+          target_temperature: { type: 'number', title: 'Doeltemperatuur', units: '°C' },
+          'measure_pressure.station': { type: 'number', title: 'Luchtdruk (station)', units: 'mbar' },
+        },
+      },
+    });
+
+    const options = await listCapabilityOptions(api, { appId: APP_ID });
+    const byId = Object.fromEntries(options.map((o) => [o.capabilityId, o]));
+
+    assert.equal(byId.target_temperature.isMeasurement, false);
+    assert.equal(byId['measure_pressure.station'].isMeasurement, true);
+    assert.equal(byId['measure_pressure.station'].quantity, 'pressure');
+    assert.equal(byId['measure_pressure.station'].normalizedUnits, 'hpa');
+  });
+});

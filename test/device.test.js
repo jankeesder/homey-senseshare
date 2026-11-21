@@ -374,3 +374,22 @@ describe('SenseBoxDevice', () => {
     });
   });
 });
+
+describe('SenseBoxDevice unit conversion', () => {
+  it('sends a Homey reading in mbar to a sensor in Pa as Pa', async () => {
+    const PRESSURE = 'd'.repeat(24);
+    const pressureBox = { ...box(), sensors: [{ id: PRESSURE, title: 'Pressure', unit: 'Pa', sensorType: 'BMP280' }] };
+    const { device, fetch, homeyDevices } = await setup({
+      responses: [ok],
+      remembered: pressureBox,
+      store: { mapping: { [PRESSURE]: { deviceId: 'weather', capabilityId: 'measure_pressure.station' } } },
+    });
+    homeyDevices.weather.capabilitiesObj['measure_pressure.station'] = {
+      value: 1013.2, units: 'mbar', lastUpdated: new Date(Date.now() - 1000).toISOString(),
+    };
+
+    await device.uploadNow();
+
+    assert.deepEqual(fetch.calls[0].body.map((m) => [m.sensor, m.value]), [[PRESSURE, '101320']]);
+  });
+});

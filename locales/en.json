@@ -37,7 +37,7 @@
       "indoor_box": "This senseBox is set to \"indoor\" on openSenseMap.",
       "no_sensors": "This senseBox has no sensors yet. Add them on opensensemap.org and reload the sensor list.",
       "no_options": "No Homey devices with numeric readings were found.",
-      "unit_warning": "Units differ: Homey measures in __homey__, openSenseMap expects __osem__.",
+      "unit_warning": "Units differ and cannot be converted: Homey measures in __homey__, openSenseMap expects __osem__.",
       "unit_unknown": "Homey has no unit for this reading; check that it matches __osem__.",
       "no_boxes_left": "All senseBoxes of this account have already been added.",
       "select_one": "Choose at least one senseBox.",
@@ -46,7 +46,10 @@
       "refreshed": "Sensor list updated.",
       "relogin": "Sign in again",
       "add": "Add devices",
-      "save": "Save"
+      "save": "Save",
+      "unit_convert": "Converted from __homey__ to __osem__.",
+      "show_all": "Show all readings",
+      "no_match": "No matching readings found. Tick \"Show all readings\" to choose anyway."
     }
   }
 }

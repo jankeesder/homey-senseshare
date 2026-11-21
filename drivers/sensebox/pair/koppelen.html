@@ -1,6 +1,7 @@
 <style>
   .ss-note { font-size: 0.85em; opacity: 0.75; margin: 0.25em 0 0.75em; }
   .ss-warning { font-size: 0.85em; color: #b45309; margin-top: 0.35em; }
+  .ss-info { font-size: 0.85em; color: #2f7d5b; margin-top: 0.35em; }
   .ss-alert { padding: 0.75em; border-radius: 0.5em; background: rgba(217, 119, 6, 0.12); color: #92400e; margin: 0.75em 0; }
   .ss-box { margin-bottom: 1.5em; }
   .ss-box-id { font-size: 0.8em; opacity: 0.6; word-break: break-all; margin-bottom: 0.5em; }
@@ -17,6 +18,10 @@
 <p class="ss-note" id="ss-outdoor"></p>
 <p class="ss-note" id="ss-account"></p>
 <div class="ss-alert ss-hidden" id="ss-alert"></div>
+<label class="ss-include ss-hidden" id="ss-show-all-row">
+  <input type="checkbox" class="homey-form-checkbox-input" id="ss-show-all">
+  <span id="ss-show-all-label"></span>
+</label>
 
 <form class="homey-form" id="ss-form" onsubmit="return false;"></form>
 
@@ -30,12 +35,16 @@
   (function () {
     'use strict';
 
-    var state = { data: null, optionsByValue: {} };
+    var state = {
+      data: null, optionsByValue: {}, showAll: false, included: {},
+    };
     var form = document.getElementById('ss-form');
     var alertBox = document.getElementById('ss-alert');
     var saveButton = document.getElementById('ss-save');
     var refreshButton = document.getElementById('ss-refresh');
     var reloginButton = document.getElementById('ss-relogin');
+    var showAllRow = document.getElementById('ss-show-all-row');
+    var showAllInput = document.getElementById('ss-show-all');
 
     function t(key, tokens) {
       return Homey.__('pair.link.' + key, tokens);
@@ -81,20 +90,50 @@
       return groups;
     }
 
-    function updateWarning(select, sensor, warning) {
-      var option = state.optionsByValue[select.value];
-      var text = '';
-      if (option && sensor.normalizedUnit) {
-        if (!option.normalizedUnits) text = t('unit_unknown', { osem: sensor.unit });
-        else if (option.normalizedUnits !== sensor.normalizedUnit) text = t('unit_warning', { homey: option.units, osem: sensor.unit });
-      }
-      warning.textContent = text;
-      show(warning, Boolean(text));
+    // Same rules as unitCompatibility() in lib/units.js.
+    function compatibility(option, sensor) {
+      if (!sensor.normalizedUnit) return 'unknown_sensor';
+      if (!option.normalizedUnits) return 'unknown_homey';
+      if (option.normalizedUnits === sensor.normalizedUnit) return 'same';
+      if (option.quantity && option.quantity === sensor.quantity) return 'convert';
+      return 'different';
     }
 
-    function renderSensor(box, sensor, groups) {
+    // Shown without "show all": measurements whose unit fits the sensor.
+    function usable(option, sensor) {
+      if (!option.isMeasurement) return false;
+      var result = compatibility(option, sensor);
+      return result === 'same' || result === 'convert' || result === 'unknown_sensor';
+    }
+
+    function updateUnitNote(select, sensor, note) {
+      var option = state.optionsByValue[select.value];
+      var text = '';
+      var info = false;
+      if (option) {
+        var result = compatibility(option, sensor);
+        if (result === 'convert') {
+          text = t('unit_convert', { homey: option.units, osem: sensor.unit });
+          info = true;
+        } else if (result === 'different') {
+          text = t('unit_warning', { homey: option.units, osem: sensor.unit });
+        } else if (result === 'unknown_homey') {
+          text = t('unit_unknown', { osem: sensor.unit });
+        }
+      }
+      note.className = info ? 'ss-info' : 'ss-warning';
+      note.textContent = text;
+      show(note, Boolean(text));
+    }
+
+    function renderSensor(box, sensor) {
       var id = 'ss-' + box.id + '-' + sensor.id;
       var label = sensor.title + (sensor.unit ? ' (' + sensor.unit + ')' : '');
+      var wanted = (box.selection && box.selection[sensor.id]) || '';
+      var matching = state.data.options.filter(function (option) {
+        return state.showAll || option.value === wanted || usable(option, sensor);
+      });
+      var groups = groupOptions(matching);
       var select = el('select', { class: 'homey-form-select', id: id, 'data-sensor-id': sensor.id }, [
         el('option', { value: '', text: t('none') }),
       ]);
@@ -106,21 +145,18 @@
         select.appendChild(optgroup);
       });
 
-      var wanted = (box.selection && box.selection[sensor.id]) || '';
       select.value = state.optionsByValue[wanted] ? wanted : '';
 
-      var warning = el('div', { class: 'ss-warning ss-hidden' });
-      select.addEventListener('change', function () { updateWarning(select, sensor, warning); });
-      updateWarning(select, sensor, warning);
+      var note = el('div', { class: 'ss-warning ss-hidden' });
+      select.addEventListener('change', function () { updateUnitNote(select, sensor, note); });
+      updateUnitNote(select, sensor, note);
 
-      return el('div', { class: 'homey-form-group' }, [
-        el('label', { class: 'homey-form-label', for: id, text: label }),
-        select,
-        warning,
-      ]);
+      var children = [el('label', { class: 'homey-form-label', for: id, text: label }), select, note];
+      if (!matching.length) children.push(el('p', { class: 'ss-note', text: t('no_match') }));
+      return el('div', { class: 'homey-form-group' }, children);
     }
 
-    function renderBox(box, groups) {
+    function renderBox(box) {
       var title = box.name + (box.shared ? ' (' + t('shared') + ')' : '');
       var fieldset = el('fieldset', { class: 'homey-form-fieldset ss-box', 'data-box-id': box.id }, [
         el('legend', { class: 'homey-form-legend', text: title }),
@@ -129,7 +165,9 @@
 
       if (state.data.mode === 'pair' && !state.data.selectionKnown) {
         var checkbox = el('input', { type: 'checkbox', class: 'homey-form-checkbox-input ss-include-input' });
-        checkbox.checked = state.data.boxes.length === 1;
+        checkbox.checked = state.included[box.id] !== undefined
+          ? state.included[box.id]
+          : state.data.boxes.length === 1;
         fieldset.appendChild(el('label', { class: 'ss-include' }, [checkbox, t('include')]));
       }
       if (box.exposure === 'indoor') {
@@ -139,7 +177,7 @@
         fieldset.appendChild(el('p', { class: 'ss-note', text: t('no_sensors') }));
       }
       box.sensors.forEach(function (sensor) {
-        fieldset.appendChild(renderSensor(box, sensor, groups));
+        fieldset.appendChild(renderSensor(box, sensor));
       });
       return fieldset;
     }
@@ -148,7 +186,6 @@
       var data = state.data;
       state.optionsByValue = {};
       data.options.forEach(function (option) { state.optionsByValue[option.value] = option; });
-      var groups = groupOptions(data.options);
 
       form.textContent = '';
       document.getElementById('ss-account').textContent = data.account ? t('account', { account: data.account }) : '';
@@ -158,7 +195,9 @@
       else if (!data.options.length) setAlert(t('no_options'));
       else setAlert('');
 
-      data.boxes.forEach(function (box) { form.appendChild(renderBox(box, groups)); });
+      data.boxes.forEach(function (box) { form.appendChild(renderBox(box)); });
+      show(showAllRow, data.boxes.length > 0 && data.options.length > 0);
+      showAllInput.checked = state.showAll;
 
       saveButton.textContent = data.mode === 'pair' ? t('add') : t('save');
       show(saveButton, data.boxes.length > 0);
@@ -176,6 +215,17 @@
 
     function fieldsets() {
       return Array.prototype.slice.call(form.querySelectorAll('fieldset[data-box-id]'));
+    }
+
+    // Keeps unsaved choices when the form is rendered again.
+    function rememberChoices() {
+      fieldsets().forEach(function (fieldset) {
+        var id = fieldset.getAttribute('data-box-id');
+        var box = state.data.boxes.find(function (candidate) { return candidate.id === id; });
+        if (box) box.selection = selectionOf(fieldset);
+        var include = fieldset.querySelector('.ss-include-input');
+        if (include) state.included[id] = include.checked;
+      });
     }
 
     async function load() {
@@ -255,6 +305,7 @@
     document.getElementById('ss-title').textContent = t('title');
     document.getElementById('ss-intro').textContent = t('intro');
     document.getElementById('ss-outdoor').textContent = t('outdoor_hint');
+    document.getElementById('ss-show-all-label').textContent = t('show_all');
     refreshButton.textContent = t('refresh');
     reloginButton.textContent = t('relogin');
     show(saveButton, false);
@@ -264,6 +315,12 @@
       (state.data.mode === 'pair' ? savePair() : saveRepair());
     });
     refreshButton.addEventListener('click', function () { refreshSensors(); });
+    showAllInput.addEventListener('change', function () {
+      if (!state.data) return;
+      rememberChoices();
+      state.showAll = showAllInput.checked;
+      render();
+    });
     reloginButton.addEventListener('click', function () { Homey.showView('login_credentials'); });
 
     load();

@@ -243,11 +243,13 @@ class SenseBoxDevice extends Homey.Device {
     }
 
     const lastQueued = { ...(this.getStoreValue('lastQueued') || {}) };
+    const sensors = this._sensors();
     const { measurements, skipped } = collectMeasurements({
       mapping,
       devices,
       lastQueued,
-      validSensorIds: new Set(this._sensors().map((sensor) => sensor.id)),
+      validSensorIds: new Set(sensors.map((sensor) => sensor.id)),
+      sensorUnits: Object.fromEntries(sensors.map((sensor) => [sensor.id, sensor.unit])),
     });
 
     const notable = skipped.filter((entry) => entry.reason !== 'unchanged');
