@@ -146,3 +146,22 @@ describe('capability options for filtering', () => {
     assert.equal(byId['measure_pressure.station'].normalizedUnits, 'hpa');
   });
 });
+
+describe('isOwnDevice', () => {
+  const { isOwnDevice } = require('../lib/homeyDevices');
+
+  it('recognizes this app\'s devices via driverId (API v3) without reading driverUri', () => {
+    const device = { driverId: `homey:app:${APP_ID}:sensebox` };
+    Object.defineProperty(device, 'driverUri', { get() { throw new Error('driverUri must not be read'); } });
+    assert.equal(isOwnDevice(device, APP_ID), true);
+  });
+
+  it('recognizes this app\'s devices via driverUri (API v2)', () => {
+    assert.equal(isOwnDevice({ driverUri: `homey:app:${APP_ID}`, driverId: 'sensebox' }, APP_ID), true);
+  });
+
+  it('does not match other apps, including ones whose id starts the same', () => {
+    assert.equal(isOwnDevice({ driverId: 'homey:app:com.example:x' }, APP_ID), false);
+    assert.equal(isOwnDevice({ driverId: `homey:app:${APP_ID}2:x` }, APP_ID), false);
+  });
+});
