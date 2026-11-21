@@ -1,0 +1,30 @@
+{
+  "id": "nl.senseshare",
+  "version": "1.0.0",
+  "compatibility": ">=12.2.0",
+  "sdk": 3,
+  "platforms": ["local"],
+  "name": {
+    "en": "SenseShare",
+    "nl": "SenseShare"
+  },
+  "description": {
+    "en": "Put your neighbourhood on the map with the sensors you already have",
+    "nl": "Zet je buurt op de kaart met de sensoren die je al hebt"
+  },
+  "category": "tools",
+  "tags": {
+    "en": ["opensensemap", "sensebox", "open data", "citizen science", "air quality", "weather", "temperature", "upload"],
+    "nl": ["opensensemap", "sensebox", "open data", "burgerwetenschap", "luchtkwaliteit", "weer", "temperatuur", "upload"]
+  },
+  "permissions": ["homey:manager:api"],
+  "images": {
+    "small": "/assets/images/small.png",
+    "large": "/assets/images/large.png",
+    "xlarge": "/assets/images/xlarge.png"
+  },
+  "author": {
+    "name": "Jan-Kees de Rijke"
+  },
+  "brandColor": "#2F7D5B"
+}

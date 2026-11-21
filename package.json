@@ -1,0 +1,19 @@
+{
+  "name": "nl.senseshare",
+  "version": "1.0.0",
+  "description": "Homey app that uploads sensor readings from Homey devices to openSenseMap",
+  "main": "app.js",
+  "private": true,
+  "license": "GPL-3.0-or-later",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "validate": "homey app validate --level publish",
+    "rename": "node scripts/rename-app.js"
+  },
+  "dependencies": {
+    "homey-api": "^3.21.3"
+  }
+}

@@ -1,0 +1,6 @@
+test/
+scripts/
+README.md
+*.tar.gz
+.git/
+.gitignore

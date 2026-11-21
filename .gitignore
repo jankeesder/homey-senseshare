@@ -1,0 +1,5 @@
+node_modules/
+.homeybuild/
+env.json
+*.tar.gz
+.DS_Store
