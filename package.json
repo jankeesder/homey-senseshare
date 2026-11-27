@@ -1,6 +1,6 @@
 {
   "name": "nl.senseshare",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Homey app that uploads sensor readings from Homey devices to openSenseMap",
   "main": "app.js",
   "private": true,
